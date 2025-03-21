@@ -9,6 +9,7 @@ import 'resource_management_screen.dart';
 import 'user_management_screen.dart';
 import 'system_logs_screen.dart';
 import '../../../core/theme/app_theme.dart';
+import 'assessment_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   static const routeName = '/admin-dashboard';
@@ -132,6 +133,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Assessment Management',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.assignment, size: 32),
+                    title: const Text('Question Generation'),
+                    subtitle: const Text('Generate questions from chapter PDFs'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AssessmentScreen(),
                         ),
                       );
                     },
