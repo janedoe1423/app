@@ -38,6 +38,26 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     
     try {
+      // For demo purposes, handle teacher login
+      if (email == 'teacher@educationguide.com' && password == 'teacher123') {
+        final now = DateTime.now();
+        _user = UserModel(
+          id: 'teacher123',
+          email: email,
+          displayName: 'Demo Teacher',
+          role: UserRole.teacher,
+          firstName: 'Demo',
+          lastName: 'Teacher',
+          createdAt: now,
+          updatedAt: now,
+        );
+        _status = AuthStatus.authenticated;
+        _error = null;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      
       final user = await _authService.login(email, password, isAdminLogin: isAdminLogin);
       if (user != null) {
         _user = user;

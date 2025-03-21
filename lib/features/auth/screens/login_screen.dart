@@ -6,6 +6,7 @@ import '../../../core/widgets/app_textfield.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/routes/app_routes.dart';
 import '../provider/auth_provider.dart';
 import 'register_screen.dart';
 
@@ -21,7 +22,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isAdminLogin = false;
+  String _loginType = 'user'; // 'user', 'admin', or 'teacher'
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -53,16 +54,18 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
       final success = await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
-        isAdminLogin: _isAdminLogin,
+        isAdminLogin: _loginType == 'admin',
       );
 
       if (mounted) {
         if (success) {
           final user = authProvider.currentUser;
           if (user?.role == UserRole.admin) {
-            Navigator.pushReplacementNamed(context, '/admin/dashboard');
+            Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+          } else if (user?.role == UserRole.teacher) {
+            Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
           } else {
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -112,31 +115,36 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                       children: [
                         ChoiceChip(
                           label: const Text('User'),
-                          selected: !_isAdminLogin,
+                          selected: _loginType == 'user',
                           onSelected: (selected) {
                             setState(() {
-                              _isAdminLogin = !selected;
-                              if (!_isAdminLogin) {
-                                _emailController.clear();
-                                _passwordController.clear();
-                              }
+                              _loginType = 'user';
+                              _emailController.clear();
+                              _passwordController.clear();
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        ChoiceChip(
+                          label: const Text('Teacher'),
+                          selected: _loginType == 'teacher',
+                          onSelected: (selected) {
+                            setState(() {
+                              _loginType = 'teacher';
+                              _emailController.text = 'teacher@educationguide.com';
+                              _passwordController.text = 'teacher123';
                             });
                           },
                         ),
                         const SizedBox(width: 16),
                         ChoiceChip(
                           label: const Text('Admin'),
-                          selected: _isAdminLogin,
+                          selected: _loginType == 'admin',
                           onSelected: (selected) {
                             setState(() {
-                              _isAdminLogin = selected;
-                              if (selected) {
-                                _emailController.text = 'admin@educationguide.com';
-                                _passwordController.text = 'admin123';
-                              } else {
-                                _emailController.clear();
-                                _passwordController.clear();
-                              }
+                              _loginType = 'admin';
+                              _emailController.text = 'admin@educationguide.com';
+                              _passwordController.text = 'admin123';
                             });
                           },
                         ),
@@ -196,7 +204,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                           : _handleLogin,
                       isLoading: authProvider.isLoading,
                     ),
-                    if (!_isAdminLogin) ...[
+                    if (_loginType != 'admin') ...[
                       const SizedBox(height: 24),
                       _buildSignUpOption(),
                     ],

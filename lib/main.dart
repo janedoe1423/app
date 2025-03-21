@@ -5,10 +5,9 @@ import 'core/utils/connectivity_utils.dart';
 import 'core/utils/admin_initializer.dart';
 import 'core/services/auth_service.dart';
 import 'features/auth/provider/auth_provider.dart';
-import 'app.dart';
-import 'package:provider/provider.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   // Ensure Flutter widgets are initialized
@@ -56,7 +55,7 @@ void main() async {
         ),
       ],
       child: MaterialApp(
-        title: 'Your App Name',
+        title: 'Teacher Dashboard',
         theme: AppTheme.lightTheme,
         initialRoute: AppRoutes.login,
         onGenerateRoute: AppRoutes.onGenerateRoute,
