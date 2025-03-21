@@ -130,95 +130,87 @@ class AdminProvider with ChangeNotifier {
   }
 
   // User Approval Methods
-  Future<void> loadApprovalRequests({String? status}) async {
-    _setLoading(true);
-    
+  Future<void> loadApprovalRequests({ApprovalStatus? status}) async {
     try {
-      final requests = await _adminService.getApprovalRequests(status: status);
-      _approvalRequests = requests;
-      _setLoading(false);
+      _isLoading = true;
+      notifyListeners();
+
+      _approvalRequests = await _adminService.getApprovalRequests(status: status);
+      _error = null;
     } catch (e) {
-      _handleError('Failed to load approval requests: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<void> processUserApproval({
-    required String requestId,
-    required bool approved,
+  Future<void> processApprovalRequest(
+    String requestId,
+    bool isApproved, {
     String? notes,
   }) async {
-    _setLoading(true);
-    
     try {
+      _isLoading = true;
+      notifyListeners();
+
       final updatedRequest = await _adminService.processUserApproval(
-        requestId: requestId,
-        approved: approved,
+        requestId,
+        isApproved,
         notes: notes,
       );
-      
-      final index = _approvalRequests.indexWhere((req) => req.id == requestId);
+
+      // Update the local list
+      final index = _approvalRequests.indexWhere((r) => r.id == requestId);
       if (index != -1) {
         _approvalRequests[index] = updatedRequest;
       }
-      
-      _setLoading(false);
-      notifyListeners();
+
+      _error = null;
     } catch (e) {
-      _handleError('Failed to process approval: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   // Resource Management Methods
   Future<void> loadResourceRequests({ResourceRequestStatus? status}) async {
-    _setLoading(true);
-    
     try {
-      final requests = await _adminService.getResourceRequests(status: status);
-      _resourceRequests = requests;
-      _setLoading(false);
-    } catch (e) {
-      _handleError('Failed to load resource requests: $e');
-    }
-  }
-
-  Future<void> createResourceRequest(ResourceRequest request) async {
-    _setLoading(true);
-    
-    try {
-      final newRequest = await _adminService.createResourceRequest(request);
-      _resourceRequests.add(newRequest);
-      _setLoading(false);
+      _isLoading = true;
       notifyListeners();
+
+      final requests = await _adminService.getResourceRequests();
+      _resourceRequests = requests.map((data) => ResourceRequest.fromMap(data as Map<String, dynamic>)).toList();
+      
+      _error = null;
     } catch (e) {
-      _handleError('Failed to create resource request: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<void> processResourceRequest({
-    required String requestId,
-    required ResourceRequestStatus newStatus,
-    String? donorName,
+  Future<void> processResourceRequest(
+    String requestId,
+    bool isApproved, {
     String? notes,
   }) async {
-    _setLoading(true);
-    
     try {
-      final updatedRequest = await _adminService.processResourceRequest(
-        requestId: requestId,
-        newStatus: newStatus,
-        donorName: donorName,
-        notes: notes,
-      );
-      
-      final index = _resourceRequests.indexWhere((req) => req.id == requestId);
-      if (index != -1) {
-        _resourceRequests[index] = updatedRequest;
-      }
-      
-      _setLoading(false);
+      _isLoading = true;
       notifyListeners();
+
+      await _adminService.processResourceRequest(requestId, isApproved, notes: notes);
+      await loadResourceRequests(); // Reload the list after processing
+
+      _error = null;
     } catch (e) {
-      _handleError('Failed to process resource request: $e');
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

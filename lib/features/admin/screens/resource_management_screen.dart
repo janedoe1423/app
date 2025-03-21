@@ -1,77 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/admin_provider.dart';
 import '../models/resource_request_model.dart';
+import '../providers/admin_provider.dart';
 import '../widgets/resource_request_card.dart';
 
 class ResourceManagementScreen extends StatefulWidget {
-  static const routeName = '/resource-management';
-  
   const ResourceManagementScreen({Key? key}) : super(key: key);
 
   @override
   State<ResourceManagementScreen> createState() => _ResourceManagementScreenState();
 }
 
-class _ResourceManagementScreenState extends State<ResourceManagementScreen> with SingleTickerProviderStateMixin {
-  bool _isLoading = true;
-  String? _error;
+class _ResourceManagementScreenState extends State<ResourceManagementScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+  final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _donorNameController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(_handleTabChange);
-    _loadResourceRequests();
+    _loadRequests();
   }
-  
+
   @override
   void dispose() {
-    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
+    _notesController.dispose();
+    _donorNameController.dispose();
     super.dispose();
   }
-  
-  void _handleTabChange() {
-    if (!_tabController.indexIsChanging) {
-      _loadResourceRequests(_getStatusFromTabIndex(_tabController.index));
-    }
+
+  Future<void> _loadRequests() async {
+    final provider = Provider.of<AdminProvider>(context, listen: false);
+    await provider.loadResourceRequests();
   }
-  
-  ResourceRequestStatus? _getStatusFromTabIndex(int index) {
+
+  ResourceRequestStatus _getStatusFromIndex(int index) {
     switch (index) {
       case 0:
-        return null; // All
-      case 1:
         return ResourceRequestStatus.pending;
-      case 2:
+      case 1:
         return ResourceRequestStatus.approved;
+      case 2:
+        return ResourceRequestStatus.rejected;
       case 3:
-        return ResourceRequestStatus.fulfilled;
+        return ResourceRequestStatus.completed;
       default:
-        return null;
+        return ResourceRequestStatus.pending;
     }
   }
 
-  Future<void> _loadResourceRequests([ResourceRequestStatus? status]) async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<Map<String, String>?> _showProcessDialog(
+    BuildContext context,
+    String requestId,
+    bool isApproved,
+  ) async {
+    _notesController.clear();
+    _donorNameController.clear();
 
-    try {
-      await Provider.of<AdminProvider>(context, listen: false)
-          .loadResourceRequests(status: status);
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _error = e.toString();
-      });
-    }
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isApproved ? 'Approve Request' : 'Reject Request'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isApproved) TextField(
+              controller: _donorNameController,
+              decoration: const InputDecoration(
+                labelText: 'Donor Name (Optional)',
+              ),
+            ),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(
+                labelText: 'Notes (Optional)',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context, {
+                'notes': _notesController.text,
+                'donorName': _donorNameController.text,
+              });
+            },
+            child: Text(isApproved ? 'Approve' : 'Reject'),
+          ),
+        ],
+      ),
+    );
+
+    return result;
   }
 
   @override
@@ -79,110 +108,70 @@ class _ResourceManagementScreenState extends State<ResourceManagementScreen> wit
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resource Management'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _loadResourceRequests(_getStatusFromTabIndex(_tabController.index)),
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
           tabs: const [
-            Tab(text: 'All Requests'),
             Tab(text: 'Pending'),
             Tab(text: 'Approved'),
-            Tab(text: 'Fulfilled'),
+            Tab(text: 'Rejected'),
+            Tab(text: 'Completed'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildResourceRequestsTab(null),
           _buildResourceRequestsTab(ResourceRequestStatus.pending),
           _buildResourceRequestsTab(ResourceRequestStatus.approved),
-          _buildResourceRequestsTab(ResourceRequestStatus.fulfilled),
+          _buildResourceRequestsTab(ResourceRequestStatus.rejected),
+          _buildResourceRequestsTab(ResourceRequestStatus.completed),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement creating a new resource request
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Create new resource request functionality coming soon!'),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildResourceRequestsTab(ResourceRequestStatus? status) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Error loading requests',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(_error!),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _loadResourceRequests(status),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    final adminProvider = Provider.of<AdminProvider>(context);
-    final requests = adminProvider.resourceRequests;
-    
-    // Filter requests by status if specified
-    final filteredRequests = status == null
-        ? requests
-        : requests.where((req) => req.status == status).toList();
-    
-    if (filteredRequests.isEmpty) {
-      return Center(
-        child: Text(
-          'No ${status == null ? '' : status.toString().split('.').last} resource requests found',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-      );
-    }
+  Widget _buildResourceRequestsTab(ResourceRequestStatus status) {
+    return Consumer<AdminProvider>(
+      builder: (context, adminProvider, child) {
+        if (adminProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    return RefreshIndicator(
-      onRefresh: () => _loadResourceRequests(status),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: filteredRequests.length,
-        itemBuilder: (ctx, index) {
-          final request = filteredRequests[index];
-          return ResourceRequestCard(
-            request: request,
-            onProcess: (newStatus, donorName, notes) async {
-              await adminProvider.processResourceRequest(
-                requestId: request.id,
-                newStatus: newStatus,
-                donorName: donorName,
-                notes: notes,
-              );
-              _loadResourceRequests(status);
-            },
+        final requests = adminProvider.resourceRequests
+            .where((request) => request.status == status)
+            .toList();
+
+        if (requests.isEmpty) {
+          return Center(
+            child: Text('No ${status.toString().split('.').last} requests'),
           );
-        },
-      ),
+        }
+
+        return ListView.builder(
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return ResourceRequestCard(
+              request: request,
+              onProcess: (requestId, isApproved) async {
+                final result = await _showProcessDialog(
+                  context,
+                  requestId,
+                  isApproved,
+                );
+
+                if (result != null && mounted) {
+                  await adminProvider.processResourceRequest(
+                    requestId,
+                    isApproved,
+                    notes: result['notes'],
+                  );
+                }
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

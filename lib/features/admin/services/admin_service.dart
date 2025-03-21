@@ -24,7 +24,77 @@ class AdminService {
     );
   }
 
-  // Get system logs
+  // User Management
+  Future<List<UserModel>> getUsers({UserRole? role, String? searchQuery}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return []; // Mock data
+  }
+
+  Future<UserModel> createUser(UserModel user) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return user; // Mock data
+  }
+
+  Future<UserModel> updateUser(UserModel user) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return user; // Mock data
+  }
+
+  Future<void> deleteUser(String userId) async {
+    await Future.delayed(const Duration(seconds: 1));
+  }
+
+  Future<UserModel?> getUserById(String userId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return null; // Mock data
+  }
+
+  // Approval Requests
+  Future<List<UserApprovalRequest>> getApprovalRequests({ApprovalStatus? status}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return []; // Mock data
+  }
+
+  Future<UserApprovalRequest> processUserApproval(
+    String requestId,
+    bool isApproved,
+    {String? notes}
+  ) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final now = DateTime.now();
+    return UserApprovalRequest(
+      id: requestId,
+      email: 'test@example.com',
+      displayName: 'Test User',
+      role: UserRole.teacher,
+      status: isApproved ? ApprovalStatus.approved : ApprovalStatus.rejected,
+      createdAt: now,
+      requestDate: now,
+      notes: notes,
+    );
+  }
+
+  // Resource Requests
+  Future<List<dynamic>> getResourceRequests({String? status}) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return []; // Mock data
+  }
+
+  Future<dynamic> createResourceRequest(dynamic request) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return request; // Mock data
+  }
+
+  Future<dynamic> processResourceRequest(
+    String requestId,
+    bool isApproved,
+    {String? notes}
+  ) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return null; // Mock data
+  }
+
+  // System Logs
   Future<List<SystemLog>> getSystemLogs() async {
     await Future.delayed(const Duration(seconds: 1));
     return [
@@ -35,33 +105,6 @@ class AdminService {
         timestamp: DateTime.now(),
         userId: 'user123',
         action: 'REGISTER',
-        source: 'System',
-        details: 'User registration completed successfully',
-      ),
-      SystemLog(
-        id: '2',
-        message: 'Failed login attempt',
-        severity: LogSeverity.warning,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        userId: 'user456',
-        action: 'LOGIN',
-        source: 'Auth Service',
-        details: 'Invalid credentials provided',
-      ),
-    ];
-  }
-
-  // Get user approvals
-  Future<List<UserApprovalRequest>> getUserApprovals() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      UserApprovalRequest(
-        id: '1',
-        email: 'teacher@example.com',
-        displayName: 'John Doe',
-        role: UserRole.teacher,
-        status: ApprovalStatus.pending,
-        createdAt: DateTime.now(),
       ),
     ];
   }
