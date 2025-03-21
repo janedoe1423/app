@@ -21,7 +21,7 @@ class AuthService {
     await Future.delayed(const Duration(seconds: 1));
 
     // Mock login logic with admin check
-    if (isAdminLogin && email == 'admin@example.com' && password == 'admin123') {
+    if (isAdminLogin && email == 'admin@educationguide.com' && password == 'admin123') {
       return UserModel(
         id: '3',
         email: email,

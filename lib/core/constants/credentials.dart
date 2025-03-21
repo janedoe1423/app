@@ -1,4 +1,3 @@
-
 class TempCredentials {
   static const Map<String, Map<String, String>> credentials = {
     'student': {
@@ -10,7 +9,7 @@ class TempCredentials {
       'password': 'teacher123',
     },
     'admin': {
-      'email': 'admin@test.com',
+      'email': 'admin@educationguide.com',
       'password': 'admin123',
       'adminCode': 'ADMIN123',
     },
