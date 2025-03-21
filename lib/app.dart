@@ -29,6 +29,7 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'EduGenius',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
