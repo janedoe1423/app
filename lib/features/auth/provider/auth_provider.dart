@@ -7,12 +7,13 @@ enum AuthStatus {
   initial,
   authenticated,
   unauthenticated,
+  error
 }
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService;
   
-  UserModel? _currentUser;
+  UserModel? _user;
   AuthStatus _status = AuthStatus.initial;
   bool _isLoading = false;
   String? _error;
@@ -20,14 +21,14 @@ class AuthProvider with ChangeNotifier {
   AuthProvider({
     required AuthService authService,
   }) : _authService = authService {
-    _checkCurrentUser();
+    _checkAuthStatus();
   }
   
   // Getters
-  UserModel? get currentUser => _currentUser;
+  UserModel? get currentUser => _user;
   AuthStatus get status => _status;
-  String? get error => _error;
   bool get isLoading => _isLoading;
+  String? get error => _error;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
   
   // Login with email and password
@@ -37,20 +38,22 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      final user = await _authService.signInWithEmailAndPassword(
-        email, 
-        password,
-        isAdminLogin: isAdminLogin,
-      );
-      _currentUser = user;
-      _status = AuthStatus.authenticated;
-      _error = null;
+      final user = await _authService.login(email, password, isAdminLogin: isAdminLogin);
+      if (user != null) {
+        _user = user;
+        _status = AuthStatus.authenticated;
+        _error = null;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      _status = AuthStatus.unauthenticated;
       _isLoading = false;
       notifyListeners();
-      return true;
+      return false;
     } catch (e) {
       _error = e.toString();
-      _status = AuthStatus.unauthenticated;
+      _status = AuthStatus.error;
       _isLoading = false;
       notifyListeners();
       return false;
@@ -58,33 +61,25 @@ class AuthProvider with ChangeNotifier {
   }
   
   // Register a new user
-  Future<bool> register(
-    String email,
-    String password,
-    String displayName,
-    UserRole role,
-    {String? adminCode}
-  ) async {
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String displayName,
+    required UserRole role,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      // Add your registration logic here
-      // For now, just simulate a delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (role == UserRole.admin && (adminCode != 'ADMIN123')) {
-        throw Exception('Invalid admin code');
-      }
-
-      final user = await _authService.createUserWithEmailAndPassword(
-        email,
-        password,
-        displayName,
-        role,
+      final user = await _authService.register(
+        email: email,
+        password: password,
+        displayName: displayName,
+        role: role,
       );
-      _currentUser = user;
+      
+      _user = user;
       _status = AuthStatus.authenticated;
       _error = null;
       _isLoading = false;
@@ -92,7 +87,7 @@ class AuthProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _error = e.toString();
-      _status = AuthStatus.unauthenticated;
+      _status = AuthStatus.error;
       _isLoading = false;
       notifyListeners();
       return false;
@@ -105,37 +100,40 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     
     try {
-      await _authService.signOut();
-      _currentUser = null;
+      await _authService.logout();
+      _user = null;
       _status = AuthStatus.unauthenticated;
+      _error = null;
     } catch (e) {
       _error = e.toString();
+      _status = AuthStatus.error;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
   
   // Check if user is already logged in
-  Future<void> _checkCurrentUser() async {
+  Future<void> _checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
     
     try {
       final user = await _authService.getCurrentUser();
       if (user != null) {
-        _currentUser = user;
+        _user = user;
         _status = AuthStatus.authenticated;
       } else {
         _status = AuthStatus.unauthenticated;
       }
+      _error = null;
     } catch (e) {
       _error = e.toString();
-      _status = AuthStatus.unauthenticated;
+      _status = AuthStatus.error;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
   
   // Send password reset email
@@ -164,7 +162,7 @@ class AuthProvider with ChangeNotifier {
     String? lastName,
     String? photoUrl,
   }) async {
-    if (_currentUser == null) {
+    if (_user == null) {
       _error = 'No user logged in';
       notifyListeners();
       return false;
@@ -176,14 +174,14 @@ class AuthProvider with ChangeNotifier {
     
     try {
       final updatedUser = await _authService.updateUserProfile(
-        userId: _currentUser!.id,
+        userId: _user!.id,
         displayName: displayName,
         firstName: firstName,
         lastName: lastName,
         photoUrl: photoUrl,
       );
       
-      _currentUser = updatedUser;
+      _user = updatedUser;
       _isLoading = false;
       notifyListeners();
       return true;

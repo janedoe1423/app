@@ -6,216 +6,56 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/models/user_model.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../provider/dashboard_provider.dart';
+import '../widgets/teacher_dashboard_content.dart';
+import '../widgets/admin_dashboard_content.dart';
+import '../widgets/student_dashboard_content.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
-  DashboardScreenState createState() => DashboardScreenState();
-}
-
-class DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-  
-  final List<Widget> _screens = [
-    const HomeTab(),
-    const ClassesTab(),
-    const ResourcesTab(),
-    const ProfileTab(),
-  ];
-  
-  @override
-  void initState() {
-    super.initState();
-    // Load dashboard data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final dashboardProvider = Provider.of<DashboardProvider>(context, listen: false);
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
-      if (authProvider.currentUser != null) {
-        dashboardProvider.loadDashboardDataForUser(authProvider.currentUser!);
-      } else {
-        dashboardProvider.loadDashboardData();
-      }
-    });
-  }
-  
-  @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: Text(AppConstants.appName),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // Show notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              // Show settings
-            },
-          ),
-        ],
-      ),
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.class_outlined),
-            activeIcon: Icon(Icons.class_),
-            label: 'Classes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_outlined),
-            activeIcon: Icon(Icons.menu_book),
-            label: 'Resources',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Show options based on user role
-          if (authProvider.currentUser?.isTeacher ?? false) {
-            _showTeacherActions(context);
-          } else {
-            _showStudentActions(context);
-          }
-        },
-        backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-  
-  void _showTeacherActions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Create New',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        final user = authProvider.currentUser;
+
+        if (user == null) {
+          return const Center(
+            child: Text('No user found'),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Welcome, ${user.displayName}'),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(user.email),
               ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.quiz, color: AppTheme.primaryColor),
-                title: const Text('Quiz or Assessment'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to quiz creation
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.class_, color: AppTheme.primaryColor),
-                title: const Text('Classroom'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to classroom creation
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.assignment, color: AppTheme.primaryColor),
-                title: const Text('Assignment'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to assignment creation
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.auto_awesome, color: AppTheme.primaryColor),
-                title: const Text('AI-Generated Content'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to AI content creation
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
                 },
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-  
-  void _showStudentActions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Student Actions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.class_, color: AppTheme.primaryColor),
-                title: const Text('Join Classroom'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to classroom joining
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline, color: AppTheme.primaryColor),
-                title: const Text('Ask for Help'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to help section
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.auto_awesome, color: AppTheme.primaryColor),
-                title: const Text('Practice with AI'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to AI practice section
-                },
-              ),
-            ],
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                if (user.isTeacher)
+                  const TeacherDashboardContent()
+                else if (user.isAdmin)
+                  const AdminDashboardContent()
+                else
+                  const StudentDashboardContent(),
+              ],
+            ),
           ),
         );
       },
