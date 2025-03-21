@@ -7,6 +7,8 @@ import 'core/services/auth_service.dart';
 import 'features/auth/provider/auth_provider.dart';
 import 'app.dart';
 import 'package:provider/provider.dart';
+import 'core/routes/app_routes.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   // Ensure Flutter widgets are initialized
@@ -44,11 +46,21 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider(
+          create: (_) => AuthService(),
+        ),
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(authService: authService),
+          create: (context) => AuthProvider(
+            authService: context.read<AuthService>(),
+          ),
         ),
       ],
-      child: const App(),
+      child: MaterialApp(
+        title: 'Your App Name',
+        theme: AppTheme.lightTheme,
+        initialRoute: AppRoutes.login,
+        onGenerateRoute: AppRoutes.onGenerateRoute,
+      ),
     ),
   );
 }

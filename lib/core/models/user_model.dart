@@ -23,8 +23,10 @@ class UserModel {
   final DateTime updatedAt;
   final DateTime? lastLogin;
   final Map<String, dynamic>? preferences;
+  final String? profileImage;
+  final Map<String, dynamic>? metadata;
 
-  UserModel({
+  const UserModel({
     required this.id,
     required this.email,
     required this.displayName,
@@ -40,6 +42,8 @@ class UserModel {
     this.grade,
     this.lastLogin,
     this.preferences,
+    this.profileImage,
+    this.metadata,
   });
 
   // Getters for role-based checks
@@ -52,17 +56,11 @@ class UserModel {
 
   // Get user initials for avatar
   String get initials {
-    if (fullName == null || fullName!.isEmpty) {
-      return email.substring(0, 1).toUpperCase();
+    final nameParts = displayName.split(' ');
+    if (nameParts.length > 1) {
+      return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
     }
-
-    final nameParts = fullName!.split(' ');
-    if (nameParts.length == 1) {
-      return nameParts[0].substring(0, 1).toUpperCase();
-    }
-
-    return (nameParts[0].substring(0, 1) + nameParts[nameParts.length - 1].substring(0, 1))
-        .toUpperCase();
+    return displayName[0].toUpperCase();
   }
 
   Map<String, dynamic> toJson() {
@@ -82,6 +80,8 @@ class UserModel {
       'grade': grade,
       'lastLogin': lastLogin?.toIso8601String(),
       'preferences': preferences,
+      'profileImage': profileImage,
+      'metadata': metadata,
     };
   }
 
@@ -106,6 +106,8 @@ class UserModel {
           ? DateTime.parse(json['lastLogin'] as String)
           : null,
       preferences: json['preferences'] as Map<String, dynamic>?,
+      profileImage: json['profileImage'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -153,6 +155,8 @@ class UserModel {
     DateTime? updatedAt,
     DateTime? lastLogin,
     Map<String, dynamic>? preferences,
+    String? profileImage,
+    Map<String, dynamic>? metadata,
   }) {
     return UserModel(
       id: id,
@@ -170,6 +174,37 @@ class UserModel {
       grade: grade ?? this.grade,
       lastLogin: lastLogin ?? this.lastLogin,
       preferences: preferences ?? this.preferences,
+      profileImage: profileImage ?? this.profileImage,
+      metadata: metadata ?? this.metadata,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'email': email,
+      'displayName': displayName,
+      'role': role.toString().split('.').last,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'profileImage': profileImage,
+      'metadata': metadata,
+    };
+  }
+
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      id: map['id'] as String,
+      email: map['email'] as String,
+      displayName: map['displayName'] as String,
+      role: UserRole.values.firstWhere(
+        (role) => role.toString().split('.').last == map['role'],
+        orElse: () => UserRole.student,
+      ),
+      createdAt: DateTime.parse(map['createdAt']),
+      updatedAt: DateTime.parse(map['updatedAt']),
+      profileImage: map['profileImage'] as String?,
+      metadata: map['metadata'] as Map<String, dynamic>?,
     );
   }
 }

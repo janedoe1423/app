@@ -17,90 +17,74 @@ class AuthService {
   AuthService();  // Empty constructor
 
   // Sign in with email and password
-  Future<UserModel> signInWithEmailAndPassword(
-    String email,
-    String password,
-    {bool isAdminLogin = false}
-  ) async {
+  Future<UserModel?> login(String email, String password, {bool isAdminLogin = false}) async {
     await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
 
-    if (isAdminLogin) {
-      if (email == "admin@educationguide.com" && password == "admin123") {
-        return UserModel(
-          id: 'admin_id',
-          email: email,
-          displayName: 'Admin User',
-          role: UserRole.admin,
-          createdAt: now,
-          updatedAt: now,
-        );
-      }
-      throw Exception('Invalid admin credentials');
+    // Mock login logic with admin check
+    if (isAdminLogin && email == 'admin@example.com' && password == 'admin123') {
+      return UserModel(
+        id: '3',
+        email: email,
+        displayName: 'Admin User',
+        role: UserRole.admin,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    } else if (email == 'student@example.com' && password == 'password123') {
+      return UserModel(
+        id: '1',
+        email: email,
+        displayName: 'Student User',
+        role: UserRole.student,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    } else if (email == 'teacher@example.com' && password == 'password123') {
+      return UserModel(
+        id: '2',
+        email: email,
+        displayName: 'Teacher User',
+        role: UserRole.teacher,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
     }
 
-    // Mock user login
-    return UserModel(
-      id: 'user_id',
-      email: email,
-      displayName: 'Test User',
-      role: UserRole.student,
-      createdAt: now,
-      updatedAt: now,
-    );
+    throw Exception('Invalid credentials');
   }
 
   // Create a new user
-  Future<UserModel> createUserWithEmailAndPassword(
-    String email,
-    String password,
-    String displayName,
-    UserRole role,
-  ) async {
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-      
-      final now = DateTime.now();
-      
-      // Return mock user
-      return UserModel(
-        id: 'mock_id',
-        email: email,
-        displayName: displayName,
-        role: role,
-        createdAt: now,
-        updatedAt: now,
-      );
-    } catch (e) {
-      throw Exception('Failed to create user: $e');
-    }
+  Future<UserModel> register({
+    required String email,
+    required String password,
+    required String displayName,
+    required UserRole role,
+  }) async {
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Mock registration
+    return UserModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      email: email,
+      displayName: displayName,
+      role: role,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
   }
 
   // Sign out
-  Future<void> signOut() async {
-    try {
-      // Clear secure storage
-      await _secureStorage.delete(key: AppConstants.userTokenKey);
-
-      // Clear user data
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(AppConstants.userDataKey);
-
-      await Future.delayed(const Duration(seconds: 1));
-    } catch (e) {
-      throw Exception('Failed to sign out: $e');
-    }
+  Future<void> logout() async {
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   // Get current user
   Future<UserModel?> getCurrentUser() async {
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      return null;
-    } catch (e) {
-      return null;
-    }
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 1));
+    return null;
   }
 
   // Send password reset email
