@@ -1,0 +1,58 @@
+name: edugenius
+description: A Flutter-based educational platform with AI-generated content, analytics, classroom management, and teacher collaboration features.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  provider: ^6.0.5
+  shared_preferences: ^2.2.0
+  http: ^1.1.0
+  connectivity_plus: ^4.0.1
+  flutter_secure_storage: ^8.0.0
+  intl: ^0.19.0
+  fluttertoast: ^8.2.2
+  cached_network_image: ^3.2.3
+  flutter_svg: ^2.0.7
+  url_launcher: ^6.1.12
+  path_provider: ^2.0.15
+  file_picker: ^5.3.3
+  image_picker: ^1.0.1
+  flutter_markdown: ^0.6.17
+  flutter_local_notifications: ^15.1.0+1
+  fl_chart: ^0.63.0
+  data_table_2: ^2.5.6
+  flutter_spinkit: ^5.2.0
+  uuid: ^3.0.7
+  timeago: ^3.5.0
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.2
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/icons/
+    - assets/images/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
