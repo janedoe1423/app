@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 enum ResourceRequestType {
   book,
@@ -13,42 +14,47 @@ enum ResourceRequestStatus {
   pending,
   approved,
   rejected,
-  fulfilled,
+  completed
+}
+
+enum ResourceType {
+  book,
+  equipment,
+  supplies,
+  other
 }
 
 class ResourceRequest {
   final String id;
   final String title;
   final String description;
-  final ResourceRequestType type;
+  final String userId;
+  final String userName;
   final ResourceRequestStatus status;
-  final int quantity;
-  final double? estimatedCost;
-  final String requestedById;
-  final String requestedByName;
+  final DateTime createdAt;
   final DateTime requestDate;
   final String? notes;
+  final ResourceType type;
+  final int quantity;
+  final double? estimatedCost;
   final String? donorName;
-  final DateTime? fulfilledDate;
-  final String? approverId;
-  final DateTime? approvedDate;
+  final DateTime? completedDate;
 
   const ResourceRequest({
     required this.id,
     required this.title,
     required this.description,
-    required this.type,
+    required this.userId,
+    required this.userName,
     required this.status,
-    required this.quantity,
-    required this.requestedById,
-    required this.requestedByName,
+    required this.createdAt,
     required this.requestDate,
-    this.estimatedCost,
+    required this.type,
+    required this.quantity,
     this.notes,
+    this.estimatedCost,
     this.donorName,
-    this.fulfilledDate,
-    this.approverId,
-    this.approvedDate,
+    this.completedDate,
   });
 
   IconData getTypeIcon() {
@@ -77,7 +83,7 @@ class ResourceRequest {
         return Colors.blue;
       case ResourceRequestStatus.rejected:
         return Colors.red;
-      case ResourceRequestStatus.fulfilled:
+      case ResourceRequestStatus.completed:
         return Colors.green;
       default:
         return Colors.grey;
@@ -111,8 +117,8 @@ class ResourceRequest {
         return 'Approved';
       case ResourceRequestStatus.rejected:
         return 'Rejected';
-      case ResourceRequestStatus.fulfilled:
-        return 'Fulfilled';
+      case ResourceRequestStatus.completed:
+        return 'Completed';
       default:
         return 'Unknown';
     }
@@ -123,23 +129,28 @@ class ResourceRequest {
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      type: _parseType(json['type']),
-      status: _parseStatus(json['status']),
-      quantity: json['quantity'] ?? 1,
-      estimatedCost: json['estimatedCost']?.toDouble(),
-      requestedById: json['requestedById'] ?? '',
-      requestedByName: json['requestedByName'] ?? 'Unknown User',
+      userId: json['userId'] ?? '',
+      userName: json['userName'] ?? 'Unknown User',
+      status: ResourceRequestStatus.values.firstWhere(
+        (s) => s.toString() == json['status'],
+        orElse: () => ResourceRequestStatus.pending,
+      ),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
       requestDate: json['requestDate'] != null
           ? DateTime.parse(json['requestDate'])
           : DateTime.now(),
       notes: json['notes'],
+      type: ResourceType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+        orElse: () => ResourceType.other,
+      ),
+      quantity: json['quantity'] ?? 0,
+      estimatedCost: json['estimatedCost'] as double?,
       donorName: json['donorName'],
-      fulfilledDate: json['fulfilledDate'] != null
-          ? DateTime.parse(json['fulfilledDate'])
-          : null,
-      approverId: json['approverId'],
-      approvedDate: json['approvedDate'] != null
-          ? DateTime.parse(json['approvedDate'])
+      completedDate: json['completedDate'] != null
+          ? DateTime.parse(json['completedDate'])
           : null,
     );
   }
@@ -149,18 +160,17 @@ class ResourceRequest {
       'id': id,
       'title': title,
       'description': description,
-      'type': type.toString().split('.').last,
+      'userId': userId,
+      'userName': userName,
       'status': status.toString().split('.').last,
-      'quantity': quantity,
-      'estimatedCost': estimatedCost,
-      'requestedById': requestedById,
-      'requestedByName': requestedByName,
+      'createdAt': createdAt.toIso8601String(),
       'requestDate': requestDate.toIso8601String(),
       'notes': notes,
+      'type': type.toString().split('.').last,
+      'quantity': quantity,
+      'estimatedCost': estimatedCost,
       'donorName': donorName,
-      'fulfilledDate': fulfilledDate?.toIso8601String(),
-      'approverId': approverId,
-      'approvedDate': approvedDate?.toIso8601String(),
+      'completedDate': completedDate?.toIso8601String(),
     };
   }
 
@@ -192,11 +202,51 @@ class ResourceRequest {
         return ResourceRequestStatus.approved;
       case 'rejected':
         return ResourceRequestStatus.rejected;
-      case 'fulfilled':
-        return ResourceRequestStatus.fulfilled;
+      case 'completed':
+        return ResourceRequestStatus.completed;
       case 'pending':
       default:
         return ResourceRequestStatus.pending;
+    }
+  }
+
+  factory ResourceRequest.fromMap(Map<String, dynamic> data) {
+    return ResourceRequest(
+      id: data['id'] as String,
+      title: data['title'] as String,
+      description: data['description'] as String,
+      userId: data['userId'] as String,
+      userName: data['userName'] as String,
+      status: ResourceRequestStatus.values.firstWhere(
+        (s) => s.toString().split('.').last == data['status'],
+        orElse: () => ResourceRequestStatus.pending,
+      ),
+      type: ResourceType.values.firstWhere(
+        (t) => t.toString().split('.').last == data['type'],
+        orElse: () => ResourceType.other,
+      ),
+      createdAt: DateTime.parse(data['createdAt']),
+      requestDate: DateTime.parse(data['requestDate']),
+      quantity: data['quantity'] as int,
+      estimatedCost: data['estimatedCost'] as double?,
+      notes: data['notes'] as String?,
+      donorName: data['donorName'] as String?,
+      completedDate: data['completedDate'] != null 
+          ? DateTime.parse(data['completedDate'])
+          : null,
+    );
+  }
+
+  String getStatusText() {
+    switch (status) {
+      case ResourceRequestStatus.pending:
+        return 'Pending';
+      case ResourceRequestStatus.approved:
+        return 'Approved';
+      case ResourceRequestStatus.rejected:
+        return 'Rejected';
+      case ResourceRequestStatus.completed:
+        return 'Completed';
     }
   }
 }

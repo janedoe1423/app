@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/user_approval_request.dart';
-import '../../../core/models/user_model.dart';
+import '../../../core/models/user_model.dart' show UserRole;
 
 class ApprovalRequestCard extends StatelessWidget {
   final UserApprovalRequest request;

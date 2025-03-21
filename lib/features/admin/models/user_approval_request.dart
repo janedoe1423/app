@@ -1,16 +1,9 @@
-import '../../../core/models/user_model.dart';
-
-enum UserRole {
-  student,
-  teacher,
-  admin,
-  parent,
-}
+import '../../../core/models/user_model.dart' show UserRole;
 
 enum ApprovalStatus {
   pending,
   approved,
-  rejected,
+  rejected
 }
 
 class UserApprovalRequest {
@@ -24,7 +17,7 @@ class UserApprovalRequest {
   final String? notes;
   final DateTime requestDate;
 
-  UserApprovalRequest({
+  const UserApprovalRequest({
     required this.id,
     required this.email,
     required this.displayName,
