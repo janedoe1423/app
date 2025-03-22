@@ -5,11 +5,14 @@ import 'screens/admin_dashboard.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/student_dashboard.dart';
 import 'providers/assessment_provider.dart';
+import 'api/notification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final dbProvider = DatabaseProvider();
   await dbProvider.initDatabase();
+  await NotificationService().initialize();
+  await Firebase.initializeApp();
   
   runApp(
     MultiProvider(
