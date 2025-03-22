@@ -40,8 +40,17 @@ file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus-
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus-4.0.2/lib/
 connectivity_plus_platform_interface
 2.12
+<<<<<<< HEAD
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-1.2.4/
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-1.2.4/lib/
+=======
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-1.2.4/
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-1.2.4/lib/
+convert
+3.4
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/convert-3.1.2/
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/convert-3.1.2/lib/
+>>>>>>> b3bd4a414f50ae315fa881e6224d5efaaed6fb94
 cross_file
 3.3
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/cross_file-0.3.4+2/
@@ -371,9 +380,23 @@ stream_channel
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/stream_channel-2.1.4/
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/stream_channel-2.1.4/lib/
 string_scanner
+<<<<<<< HEAD
 3.1
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/string_scanner-1.4.1/
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/string_scanner-1.4.1/lib/
+=======
+2.18
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/string_scanner-1.2.0/
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/string_scanner-1.2.0/lib/
+syncfusion_flutter_core
+2.17
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/syncfusion_flutter_core-24.2.9/
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/syncfusion_flutter_core-24.2.9/lib/
+syncfusion_flutter_pdf
+2.17
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/syncfusion_flutter_pdf-24.2.9/
+file:///C:/Users/tpgav/AppData/Local/Pub/Cache/hosted/pub.dev/syncfusion_flutter_pdf-24.2.9/lib/
+>>>>>>> b3bd4a414f50ae315fa881e6224d5efaaed6fb94
 synchronized
 3.0
 file:///C:/Users/muthu/AppData/Local/Pub/Cache/hosted/pub.dev/synchronized-3.1.0+1/

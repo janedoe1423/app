@@ -3,7 +3,7 @@ class Syllabus {
   final String section;
   final String subject;
   final String fileName;
-  final List<String> chapters;
+  final List<String> topics;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -12,7 +12,7 @@ class Syllabus {
     required this.section,
     required this.subject,
     required this.fileName,
-    required this.chapters,
+    required this.topics,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -24,7 +24,7 @@ class Syllabus {
       'section': section,
       'subject': subject,
       'fileName': fileName,
-      'chapters': chapters,
+      'topics': topics,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -37,7 +37,7 @@ class Syllabus {
       section: map['section'] ?? '',
       subject: map['subject'] ?? '',
       fileName: map['fileName'] ?? '',
-      chapters: List<String>.from(map['chapters'] ?? []),
+      topics: List<String>.from(map['topics'] ?? []),
       createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(map['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
