@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../providers/database_provider.dart';
 import '../../models/syllabus.dart';
 import './view_syllabus_screen.dart';
+import '../../services/pdf_extractor.dart';
 
 class SyllabusManagement extends StatelessWidget {
   const SyllabusManagement({super.key});
@@ -115,10 +116,93 @@ class _AddSyllabusState extends State<AddSyllabus> {
   String? selectedSection;
   String? selectedSubject;
   PlatformFile? uploadedFile;
+  List<String> extractedTopics = [];
+  bool isExtracting = false;
 
-  final List<String> classes = ['Class 1', 'Class 2', 'Class 3'];
+  final List<String> classes = ['Class 10', 'Class 11', 'Class 12'];
   final List<String> sections = ['A', 'B', 'C'];
-  final List<String> subjects = ['Mathematics', 'Science', 'English'];
+  final List<String> subjects = ['Mathematics', 'Physics', 'Chemistry'];
+
+  Future<void> _uploadAndExtractPDF() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true,
+      );
+
+      if (result != null) {
+        setState(() {
+          uploadedFile = result.files.first;
+          isExtracting = true;
+          extractedTopics = []; // Clear previous topics
+        });
+
+        // Show loading dialog
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return const Center(
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Analyzing PDF content...'),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }
+
+        // Extract topics from PDF
+        final pdfExtractor = PDFExtractor();
+        final extractedData = await pdfExtractor.extractFromPDF(result.files.first.bytes!);
+        
+        // Close loading dialog
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+
+        setState(() {
+          extractedTopics = extractedData;
+          isExtracting = false;
+        });
+      }
+    } catch (e) {
+      // Close loading dialog if error occurs
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+      
+      setState(() {
+        isExtracting = false;
+      });
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error processing PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeTopic(int index) {
+    setState(() {
+      extractedTopics.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +228,8 @@ class _AddSyllabusState extends State<AddSyllabus> {
                       child: Text(value),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedClass = newValue;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedClass = value),
+                  validator: (value) => value == null ? 'Please select a class' : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -160,11 +241,8 @@ class _AddSyllabusState extends State<AddSyllabus> {
                       child: Text(value),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedSection = newValue;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedSection = value),
+                  validator: (value) => value == null ? 'Please select a section' : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -176,85 +254,94 @@ class _AddSyllabusState extends State<AddSyllabus> {
                       child: Text(value),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedSubject = newValue;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedSubject = value),
+                  validator: (value) => value == null ? 'Please select a subject' : null,
                 ),
                 const SizedBox(height: 24),
+
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    try {
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf'],
-                        withData: true,
-                      );
-
-                      if (result != null) {
-                        setState(() {
-                          uploadedFile = result.files.first;
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Syllabus uploaded successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Error uploading file. Please try again.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _uploadAndExtractPDF,
                   icon: const Icon(Icons.upload_file),
-                  label: const Text('Upload Syllabus'),
+                  label: const Text('Upload Syllabus PDF'),
                 ),
-                const SizedBox(height: 16),
 
-                if (uploadedFile != null) ...[
-                  Text('Uploaded File: ${uploadedFile!.name}'),
+                if (isExtracting)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Extracting syllabus content...'),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                if (uploadedFile != null && extractedTopics.isNotEmpty) ...[
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          setState(() {
-                            uploadedFile = null;
-                          });
-                        },
+                      const Text(
+                        'Extracted Topics:',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${extractedTopics.length} topics found',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: extractedTopics.length,
+                    itemBuilder: (context, index) {
+                      final topic = extractedTopics[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8.0),
+                        child: ListTile(
+                          title: Text(topic),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                            onPressed: () => _removeTopic(index),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+                if (uploadedFile != null)
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate() && uploadedFile != null) {
                         try {
                           final provider = Provider.of<DatabaseProvider>(context, listen: false);
-                          await provider.addSyllabus(
-                            Syllabus(
-                              className: selectedClass!,
-                              section: selectedSection!,
-                              subject: selectedSubject!,
-                              fileName: uploadedFile!.name,
-                              chapters: [],
-                              createdAt: DateTime.now(),
-                              updatedAt: DateTime.now(),
-                            ),
+                          
+                          final syllabus = Syllabus(
+                            className: selectedClass!,
+                            section: selectedSection!,
+                            subject: selectedSubject!,
+                            fileName: uploadedFile!.name,
+                            topics: extractedTopics,
+                            createdAt: DateTime.now(),
+                            updatedAt: DateTime.now(),
                           );
+
+                          await provider.addSyllabus(syllabus);
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Syllabus submitted successfully!'),
+                                content: Text('Syllabus added successfully!'),
                                 backgroundColor: Colors.green,
                               ),
                             );
@@ -263,8 +350,8 @@ class _AddSyllabusState extends State<AddSyllabus> {
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Error submitting syllabus. Please try again.'),
+                              SnackBar(
+                                content: Text('Error: ${e.toString()}'),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -274,7 +361,6 @@ class _AddSyllabusState extends State<AddSyllabus> {
                     },
                     child: const Text('Submit Syllabus'),
                   ),
-                ],
               ],
             ),
           ),
