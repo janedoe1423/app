@@ -15,6 +15,11 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
   String? selectedChapter;
   bool isGenerating = false;
   List<String>? generatedQuestions;
+  List<bool> questionSelections = []; // Track selections for each question
+  String? selectedClass; // New field for Class
+  double numberOfQuestions = 20; // Default number of questions as double for slider
+  double questionTypePercentage = 50.0; // Default percentage as double for slider
+  bool includeRegionalConversion = false; // New field for regional conversion
 
   final Map<String, List<String>> subjectChapters = {
     'Mathematics': ['Algebra', 'Calculus', 'Geometry'],
@@ -86,13 +91,15 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Class Selection
               DropdownButtonFormField<String>(
-                value: selectedSubject,
+                value: selectedClass,
                 decoration: const InputDecoration(
-                  labelText: 'Select Subject',
+                  labelText: 'Select Class',
                   border: OutlineInputBorder(),
                 ),
-                items: subjectChapters.keys.map((String value) {
+                items: ['Class 1', 'Class 2', 'Class 3'] // Example classes
+                    .map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
@@ -100,15 +107,43 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
                 }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
-                    selectedSubject = newValue;
+                    selectedClass = newValue;
+                    selectedSubject = null; // Reset subject and chapter
                     selectedChapter = null;
                     generatedQuestions = null;
                   });
                 },
-                validator: (value) => value == null ? 'Please select a subject' : null,
+                validator: (value) => value == null ? 'Please select a class' : null,
               ),
               const SizedBox(height: 16),
-              if (selectedSubject != null)
+
+              // Subject Selection
+              if (selectedClass != null) // Only show if class is selected
+                DropdownButtonFormField<String>(
+                  value: selectedSubject,
+                  decoration: const InputDecoration(
+                    labelText: 'Select Subject',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: subjectChapters.keys.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedSubject = newValue;
+                      selectedChapter = null; // Reset chapter
+                      generatedQuestions = null;
+                    });
+                  },
+                  validator: (value) => value == null ? 'Please select a subject' : null,
+                ),
+              const SizedBox(height: 16),
+
+              // Chapter Selection
+              if (selectedSubject != null) // Only show if subject is selected
                 DropdownButtonFormField<String>(
                   value: selectedChapter,
                   decoration: const InputDecoration(
@@ -124,14 +159,77 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
                   onChanged: (String? newValue) {
                     setState(() {
                       selectedChapter = newValue;
-                      generatedQuestions = null;
+                      generatedQuestions = null; // Reset questions
                     });
                   },
                   validator: (value) => value == null ? 'Please select a chapter' : null,
                 ),
+              const SizedBox(height: 16),
+
+              // Number of Questions Slider
+              if (selectedChapter != null) // Only show if chapter is selected
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Number of Questions:'),
+                    Slider(
+                      value: numberOfQuestions,
+                      min: 1,
+                      max: 50,
+                      divisions: 49,
+                      label: numberOfQuestions.round().toString(),
+                      onChanged: (double value) {
+                        setState(() {
+                          numberOfQuestions = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 16),
+
+              // Percentage of Question Types Slider
+              if (numberOfQuestions > 0) // Only show if number of questions is set
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Percentage of Question Types (0-100):'),
+                    Slider(
+                      value: questionTypePercentage,
+                      min: 0,
+                      max: 100,
+                      divisions: 100,
+                      label: questionTypePercentage.round().toString(),
+                      onChanged: (double value) {
+                        setState(() {
+                          questionTypePercentage = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 16),
+
+              // Regional Conversion Checkbox
+              if (numberOfQuestions > 0) // Only show if number of questions is set
+                Row(
+                  children: [
+                    Checkbox(
+                      value: includeRegionalConversion,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          includeRegionalConversion = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text('Include Regional Conversion'),
+                  ],
+                ),
               const SizedBox(height: 24),
+
+              // Generate Questions Button
               Center(
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: isGenerating ? null : () async {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
@@ -145,30 +243,18 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
                       
                       setState(() {
                         generatedQuestions = questions;
+                        questionSelections = List<bool>.filled(questions.length, true); // Default to selected
                         isGenerating = false;
                       });
-
-                      // Add to question bank
-                      if (!mounted) return;
-                      final provider = Provider.of<AssessmentProvider>(context, listen: false);
-                      await provider.addQuestionsToBank(
-                        '$selectedSubject-$selectedChapter',
-                        questions,
-                      );
                     }
                   },
-                  icon: isGenerating 
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : const Icon(Icons.auto_awesome),
-                  label: Text(isGenerating ? 'Generating...' : 'Generate Questions'),
+                  child: const Text('Generate Questions'),
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Display Generated Questions
               if (generatedQuestions != null) ...[
-                const SizedBox(height: 24),
                 const Text(
                   'Generated Questions:',
                   style: TextStyle(
@@ -185,9 +271,80 @@ class _QuestionGeneratorState extends State<QuestionGenerator> {
                         child: Text('${entry.key + 1}'),
                       ),
                       title: Text(entry.value),
+                      trailing: Checkbox(
+                        value: questionSelections[entry.key],
+                        onChanged: (bool? value) {
+                          setState(() {
+                            questionSelections[entry.key] = value ?? false;
+                          });
+                        },
+                      ),
                     ),
                   );
                 }).toList(),
+                const SizedBox(height: 16),
+                // Row for Regenerate and Submit Buttons
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Regenerate questions logic
+                          final questions = await generateQuestionsWithAI();
+                          setState(() {
+                            generatedQuestions = questions;
+                            questionSelections = List<bool>.filled(questions.length, true); // Reset selections
+                          });
+                        },
+                        child: const Text('Regenerate Questions'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Submit selected questions logic
+                          final selectedQuestions = generatedQuestions!.asMap().entries
+                              .where((entry) => questionSelections[entry.key])
+                              .map((entry) => entry.value)
+                              .toList();
+                          
+                          if (selectedQuestions.isNotEmpty) {
+                            final provider = Provider.of<AssessmentProvider>(context, listen: false);
+                            await provider.addQuestionsToBank(
+                              '$selectedSubject-$selectedChapter',
+                              selectedQuestions,
+                            );
+
+                            // Show success dialog
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Submitted'),
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: Colors.green),
+                                      const SizedBox(width: 8),
+                                      const Text('Questions submitted successfully!'),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Close the dialog
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                        child: const Text('Submit Selected Questions'),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
           ),
