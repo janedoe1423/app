@@ -33,6 +33,8 @@ dependencies:
   uuid: ^3.0.7
   timeago: ^3.5.0
   google_fonts: ^6.2.1
+  flutter_pdfview: ^1.4.0
+  
 
 dev_dependencies:
   flutter_test:

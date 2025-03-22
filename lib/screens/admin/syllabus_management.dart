@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../providers/database_provider.dart';
 import '../../models/syllabus.dart';
 
@@ -110,6 +111,7 @@ class _AddSyllabusState extends State<AddSyllabus> {
   String? selectedClass;
   String? selectedSection;
   String? selectedSubject;
+  String? uploadedFilePath; // To store the uploaded file path
 
   final List<String> classes = ['Class 1', 'Class 2', 'Class 3'];
   final List<String> sections = ['A', 'B', 'C'];
@@ -178,12 +180,63 @@ class _AddSyllabusState extends State<AddSyllabus> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement file picker for syllabus upload
+                onPressed: () async {
+                  // Implement file picker for syllabus upload
+                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ['pdf'], // Only allow PDF files
+                  );
+
+                  if (result != null) {
+                    // Get the file path
+                    setState(() {
+                      uploadedFilePath = result.files.single.path; // Store the file path
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Syllabus uploaded successfully!')),
+                    );
+                  } else {
+                    // User canceled the picker
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('No file selected.')),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.upload_file),
                 label: const Text('Upload Syllabus'),
               ),
+              const SizedBox(height: 16),
+              // Display uploaded file name and options
+              if (uploadedFilePath != null) ...[
+                Text('Uploaded File: ${uploadedFilePath!.split('/').last}'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          uploadedFilePath = null; // Remove the uploaded file
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Implement submit logic here
+                    if (uploadedFilePath != null) {
+                      // Submit the syllabus
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Syllabus submitted successfully!')),
+                      );
+                    }
+                  },
+                  child: const Text('Submit Syllabus'),
+                ),
+              ],
             ],
           ),
         ),
