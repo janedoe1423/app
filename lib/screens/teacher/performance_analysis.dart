@@ -33,57 +33,72 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
             ],
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Filter Section
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: selectedClass,
-                      decoration: const InputDecoration(labelText: 'Class'),
-                      items: ['Class 10', 'Class 11', 'Class 12']
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (value) => setState(() => selectedClass = value),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: selectedSubject,
-                      decoration: const InputDecoration(labelText: 'Subject'),
-                      items: ['Mathematics', 'Physics', 'Chemistry']
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (value) => setState(() => selectedSubject = value),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Tab Content
-              Expanded(
-                child: TabBarView(
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   children: [
-                    _buildOverviewTab(),
-                    _buildAssessmentAnalysisTab(),
-                    _buildTopicAnalysisTab(),
-                    _buildStudentAnalysisTab(),
+                    // Filter Section - Made Responsive
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        SizedBox(
+                          width: constraints.maxWidth > 600 
+                              ? (constraints.maxWidth - 32) / 2 
+                              : constraints.maxWidth,
+                          child: DropdownButtonFormField<String>(
+                            value: selectedClass,
+                            decoration: const InputDecoration(labelText: 'Class'),
+                            items: ['Class 10', 'Class 11', 'Class 12']
+                                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedClass = value),
+                          ),
+                        ),
+                        SizedBox(
+                          width: constraints.maxWidth > 600 
+                              ? (constraints.maxWidth - 32) / 2 
+                              : constraints.maxWidth,
+                          child: DropdownButtonFormField<String>(
+                            value: selectedSubject,
+                            decoration: const InputDecoration(labelText: 'Subject'),
+                            items: ['Mathematics', 'Physics', 'Chemistry']
+                                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedSubject = value),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Tab Content - Made Responsive
+                    SizedBox(
+                      height: constraints.maxHeight - 150, // Adjusted height
+                      child: TabBarView(
+                        children: [
+                          _buildOverviewTab(constraints),
+                          _buildAssessmentAnalysisTab(constraints),
+                          _buildTopicAnalysisTab(constraints),
+                          _buildStudentAnalysisTab(constraints),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildOverviewTab() {
+  // Updated Overview Tab with Responsive Grid
+  Widget _buildOverviewTab(BoxConstraints constraints) {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -125,13 +140,14 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
             ),
           ),
           const SizedBox(height: 16),
-          // Quick Stats
+          // Responsive Quick Stats Grid
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
+            crossAxisCount: constraints.maxWidth > 600 ? 4 : 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
+            childAspectRatio: constraints.maxWidth > 600 ? 1.5 : 1.2,
             children: [
               _buildStatCard('Average Score', '75%', Icons.score),
               _buildStatCard('Participation', '92%', Icons.people),
@@ -144,7 +160,7 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
     );
   }
 
-  Widget _buildAssessmentAnalysisTab() {
+  Widget _buildAssessmentAnalysisTab(BoxConstraints constraints) {
     return Consumer<AssessmentProvider>(
       builder: (context, provider, child) {
         final completedAssessments = provider.completedAssessments;
@@ -310,7 +326,7 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
     );
   }
 
-  Widget _buildTopicAnalysisTab() {
+  Widget _buildTopicAnalysisTab(BoxConstraints constraints) {
     return ListView.builder(
       itemCount: 5, // Sample topics
       itemBuilder: (context, index) {
@@ -342,27 +358,242 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
     );
   }
 
-  Widget _buildStudentAnalysisTab() {
-    return ListView.builder(
-      itemCount: 10, // Sample students
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: CircleAvatar(
-              child: Text('S${index + 1}'),
-            ),
-            title: Text('Student ${index + 1}'),
-            subtitle: Text('Average Score: ${70 + index * 2}%'),
-            trailing: IconButton(
-              icon: const Icon(Icons.analytics),
-              onPressed: () {
-                // Show detailed student analysis
+  Widget _buildStudentAnalysisTab(BoxConstraints constraints) {
+    return Column(
+      children: [
+        // Search Field
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: SizedBox(
+            width: constraints.maxWidth > 600 
+                ? constraints.maxWidth * 0.7 
+                : constraints.maxWidth,
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search students...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (value) {
+                // Implement search
               },
             ),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 16),
+        
+        // Student List
+        Expanded(
+          child: ListView.builder(
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(child: Text('S${index + 1}')),
+                  title: Text('Student ${index + 1}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Average Score: ${70 + index * 2}%'),
+                      const SizedBox(height: 4),
+                      LinearProgressIndicator(
+                        value: (70 + index * 2) / 100,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.blue[400]!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.analytics),
+                    onPressed: () => _showDetailedStudentAnalysis(context, index + 1),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDetailedStudentAnalysis(BuildContext context, int studentId) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                width: constraints.maxWidth > 600 
+                    ? constraints.maxWidth * 0.6 
+                    : constraints.maxWidth * 0.9,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(child: Text('S$studentId')),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Student $studentId',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              selectedClass ?? 'No class selected',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Performance Metrics
+                    _buildPerformanceMetrics(studentId),
+                    const SizedBox(height: 16),
+                    
+                    // Recent Assessments
+                    _buildRecentAssessments(studentId),
+                    const SizedBox(height: 16),
+                    
+                    // Areas for Improvement
+                    _buildAreasForImprovement(studentId),
+                    
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceMetrics(int studentId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Performance Metrics',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildMetricCard('Overall\nAverage', '78%'),
+            _buildMetricCard('Attendance\nRate', '95%'),
+            _buildMetricCard('Completed\nAssessments', '15/16'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentAssessments(int studentId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recent Assessments',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 150,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: 3,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text('Assessment ${index + 1}'),
+                subtitle: Text('Score: ${85 - (index * 5)}%'),
+                trailing: Icon(
+                  Icons.trending_up,
+                  color: Colors.green[400],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAreasForImprovement(int studentId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Areas for Improvement',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [
+            _buildImprovementChip('Algebra'),
+            _buildImprovementChip('Calculus'),
+            _buildImprovementChip('Geometry'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImprovementChip(String label) {
+    return Chip(
+      label: Text(label),
+      backgroundColor: Colors.red[100],
+      labelStyle: TextStyle(color: Colors.red[900]),
     );
   }
 

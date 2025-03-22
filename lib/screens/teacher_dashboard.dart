@@ -17,98 +17,110 @@ class TeacherDashboard extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Quick Stats',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Active Assessments',
-                      '5',
-                      Icons.assignment,
-                      Colors.blue,
+                  const Text(
+                    'Quick Stats',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Total Students',
-                      '120',
-                      Icons.people,
-                      Colors.green,
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      SizedBox(
+                        width: constraints.maxWidth > 600 
+                            ? (constraints.maxWidth - 48) / 2 
+                            : constraints.maxWidth,
+                        child: _buildStatCard(
+                          'Active Assessments',
+                          '5',
+                          Icons.assignment,
+                          Colors.blue,
+                        ),
+                      ),
+                      SizedBox(
+                        width: constraints.maxWidth > 600 
+                            ? (constraints.maxWidth - 48) / 2 
+                            : constraints.maxWidth,
+                        child: _buildStatCard(
+                          'Total Students',
+                          '120',
+                          Icons.people,
+                          Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Features',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: constraints.maxWidth > 600 ? 3 : 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: constraints.maxWidth > 600 ? 1.2 : 0.95,
+                    children: [
+                      _buildFeatureCard(
+                        context,
+                        'Assessments',
+                        Icons.assignment,
+                        'Create and manage all assessments',
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AssessmentManagement(),
+                          ),
+                        ),
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        'Performance Analysis',
+                        Icons.analytics,
+                        'View student performance and analytics',
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PerformanceAnalysis(),
+                          ),
+                        ),
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        'Class Management',
+                        Icons.class_,
+                        'Manage classes and students',
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ClassManagement(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-              const Text(
-                'Features',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    context,
-                    'Assessments',
-                    Icons.assignment,
-                    'Create and manage all assessments',
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AssessmentManagement(),
-                      ),
-                    ),
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Performance Analysis',
-                    Icons.analytics,
-                    'View student performance and analytics',
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PerformanceAnalysis(),
-                      ),
-                    ),
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Class Management',
-                    Icons.class_,
-                    'Manage classes and students',
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ClassManagement(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -119,6 +131,7 @@ class TeacherDashboard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
@@ -157,10 +170,11 @@ class TeacherDashboard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 48, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Text(
                 title,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -174,6 +188,8 @@ class TeacherDashboard extends StatelessWidget {
                   color: Colors.grey[600],
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

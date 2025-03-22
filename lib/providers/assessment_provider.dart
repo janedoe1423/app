@@ -12,6 +12,7 @@ class Assessment {
   final Map<String, double> subtopicWeightage;
   final String status; // 'scheduled', 'active', 'completed'
   final Map<String, dynamic>? results;
+  final List<String> selectedSubtopics;
 
   Assessment({
     required this.id,
@@ -25,6 +26,7 @@ class Assessment {
     required this.subtopicWeightage,
     this.status = 'scheduled',
     this.results,
+    required this.selectedSubtopics,
   });
 }
 
@@ -114,9 +116,7 @@ class AssessmentProvider with ChangeNotifier {
     required String chapter,
     required DateTime startTime,
     required DateTime endTime,
-    required int questionCount,
-    required int duration,
-    required Map<String, double> subtopicWeightage,
+    required List<String> selectedSubtopics,
   }) async {
     // Verify questions exist in question bank
     final questionKey = '$subject-$chapter';
@@ -124,20 +124,22 @@ class AssessmentProvider with ChangeNotifier {
       throw Exception('No questions available for this topic. Please contact admin.');
     }
 
-    if (_questionBank[questionKey]!.length < questionCount) {
+    if (_questionBank[questionKey]!.length < selectedSubtopics.length) {
       throw Exception('Not enough questions available. Please reduce question count or contact admin.');
     }
 
     final assessment = Assessment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: DateTime.now().toString(),
       className: className,
       subject: subject,
       chapter: chapter,
+      selectedSubtopics: selectedSubtopics,
       startTime: startTime,
       endTime: endTime,
-      questionCount: questionCount,
-      duration: duration,
-      subtopicWeightage: subtopicWeightage,
+      questionCount: selectedSubtopics.length,
+      duration: 0, // Assuming duration is not provided in the new method
+      subtopicWeightage: {},
+      status: 'scheduled',
     );
 
     _assessments.add(assessment);
@@ -198,6 +200,7 @@ class AssessmentProvider with ChangeNotifier {
             duration: assessment.duration,
             subtopicWeightage: assessment.subtopicWeightage,
             status: 'active',
+            selectedSubtopics: assessment.selectedSubtopics,
           );
         } else if (now.isAfter(assessment.endTime)) {
           assessment = Assessment(
@@ -211,6 +214,7 @@ class AssessmentProvider with ChangeNotifier {
             duration: assessment.duration,
             subtopicWeightage: assessment.subtopicWeightage,
             status: 'completed',
+            selectedSubtopics: assessment.selectedSubtopics,
           );
         }
       }
