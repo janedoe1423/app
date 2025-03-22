@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../widgets/common_header.dart';
 
 class TeacherDashboardLayout extends StatefulWidget {
   final String title;
@@ -21,53 +22,41 @@ class _TeacherDashboardLayoutState extends State<TeacherDashboardLayout> {
   int _selectedIndex = 0;
 
   void _handleNavigation(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    Navigator.pop(context); // Close the drawer
+    // Close the drawer first
+    Navigator.of(context).pop();
 
-    // Navigate to the appropriate route
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, AppRoutes.createAssessment);
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, AppRoutes.studentAnalysis);
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, AppRoutes.settings);
-        break;
-      case 4:
-        // Handle Logout
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
-        break;
-    }
+    // Use a Future to navigate after the drawer closes
+    Future.delayed(const Duration(milliseconds: 100), () {
+      setState(() {
+        _selectedIndex = index;
+      });
+
+      // Navigate to the appropriate route
+      switch (index) {
+        case 0:
+          Navigator.of(context).pushReplacementNamed(AppRoutes.teacherDashboard);
+          break;
+        case 1:
+          Navigator.of(context).pushReplacementNamed(AppRoutes.createAssessment);
+          break;
+        case 2:
+          Navigator.of(context).pushReplacementNamed(AppRoutes.studentAnalysis);
+          break;
+        case 3:
+          Navigator.of(context).pushReplacementNamed(AppRoutes.settings);
+          break;
+        case 4:
+          // Handle Logout
+          Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+          break;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              // TODO: Implement profile
-            },
-          ),
-          if (widget.actions != null) ...widget.actions!,
-        ],
-      ),
+      appBar: CommonHeader(title: widget.title),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/routes/app_routes.dart';
 import '../provider/auth_provider.dart';
+import '../../../widgets/common_header.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -84,6 +85,7 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
     final authProvider = Provider.of<AuthProvider>(context);
     
     return Scaffold(
+      appBar: CommonHeader(title: 'Login'),
       body: Stack(
         children: [
           Container(
@@ -107,107 +109,130 @@ class LoginScreenState extends State<LoginScreen> with SingleTickerProviderState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
-                    _buildHeader(),
-                    const SizedBox(height: 40),
-                    // Login Type Selector
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ChoiceChip(
-                          label: const Text('User'),
-                          selected: _loginType == 'user',
-                          onSelected: (selected) {
-                            setState(() {
-                              _loginType = 'user';
-                              _emailController.clear();
-                              _passwordController.clear();
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        ChoiceChip(
-                          label: const Text('Teacher'),
-                          selected: _loginType == 'teacher',
-                          onSelected: (selected) {
-                            setState(() {
-                              _loginType = 'teacher';
-                              _emailController.text = 'teacher@educationguide.com';
-                              _passwordController.text = 'teacher123';
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        ChoiceChip(
-                          label: const Text('Admin'),
-                          selected: _loginType == 'admin',
-                          onSelected: (selected) {
-                            setState(() {
-                              _loginType = 'admin';
-                              _emailController.text = 'admin@educationguide.com';
-                              _passwordController.text = 'admin123';
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    AppTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      hint: 'Enter your email',
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      obscureText: _obscurePassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword 
-                              ? Icons.visibility_outlined 
-                              : Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () => setState(() => 
-                          _obscurePassword = !_obscurePassword
-                        ),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.primaryColor, width: 2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
+                      child: Column(
+                        children: [
+                          _buildHeader(),
+                          const SizedBox(height: 24),
+                          // Login Type Selector
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: ChoiceChip(
+                                  label: const Text('User'),
+                                  selected: _loginType == 'user',
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _loginType = 'user';
+                                      _emailController.clear();
+                                      _passwordController.clear();
+                                    });
+                                  },
+                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ChoiceChip(
+                                  label: const Text('Teacher'),
+                                  selected: _loginType == 'teacher',
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _loginType = 'teacher';
+                                      _emailController.text = 'teacher@educationguide.com';
+                                      _passwordController.text = 'teacher123';
+                                    });
+                                  },
+                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ChoiceChip(
+                                  label: const Text('Admin'),
+                                  selected: _loginType == 'admin',
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      _loginType = 'admin';
+                                      _emailController.text = 'admin@educationguide.com';
+                                      _passwordController.text = 'admin123';
+                                    });
+                                  },
+                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+                          AppTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            hint: 'Enter your email',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          AppTextField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            hint: 'Enter your password',
+                            obscureText: _obscurePassword,
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword 
+                                    ? Icons.visibility_outlined 
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () => setState(() => 
+                                _obscurePassword = !_obscurePassword
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              if (value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          _buildRememberForgot(),
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            width: double.infinity,
+                            child: AppButton(
+                              text: 'Login',
+                              onPressed: authProvider.isLoading 
+                                  ? () {} // Empty function when loading
+                                  : _handleLogin,
+                              isLoading: authProvider.isLoading,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (_loginType != 'admin') _buildSignUpOption(),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 24),
-                    _buildRememberForgot(),
-                    const SizedBox(height: 32),
-                    AppButton(
-                      text: 'Login',
-                      onPressed: authProvider.isLoading 
-                          ? () {} // Empty function when loading
-                          : _handleLogin,
-                      isLoading: authProvider.isLoading,
-                    ),
-                    if (_loginType != 'admin') ...[
-                      const SizedBox(height: 24),
-                      _buildSignUpOption(),
-                    ],
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
