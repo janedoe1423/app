@@ -291,38 +291,47 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
   }
 
   Widget _buildAssessmentStats() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildStatItem('Average Score', '75%'),
-        _buildStatItem('Highest Score', '95%'),
-        _buildStatItem('Lowest Score', '45%'),
-        _buildStatItem('Completion Rate', '90%'),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildStatItem('Average Score', '75%'),
+          const SizedBox(width: 16),
+          _buildStatItem('Highest Score', '95%'),
+          const SizedBox(width: 16),
+          _buildStatItem('Lowest Score', '45%'),
+          const SizedBox(width: 16),
+          _buildStatItem('Completion Rate', '90%'),
+        ],
+      ),
     );
   }
 
   Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
+    return SizedBox(
+      width: 100, // Fixed width for consistency
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -500,39 +509,47 @@ class _PerformanceAnalysisState extends State<PerformanceAnalysis> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildMetricCard('Overall\nAverage', '78%'),
-            _buildMetricCard('Attendance\nRate', '95%'),
-            _buildMetricCard('Completed\nAssessments', '15/16'),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildMetricCard('Overall\nAverage', '78%'),
+              const SizedBox(width: 8),
+              _buildMetricCard('Attendance\nRate', '95%'),
+              const SizedBox(width: 8),
+              _buildMetricCard('Completed\nAssessments', '15/16'),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildMetricCard(String label, String value) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
+    return SizedBox(
+      width: 120, // Fixed width for consistency
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

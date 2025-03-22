@@ -2,7 +2,8 @@ class Syllabus {
   final String className;
   final String section;
   final String subject;
-  final List<Chapter> chapters;
+  final String fileName;
+  final List<String> chapters;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -10,6 +11,7 @@ class Syllabus {
     required this.className,
     required this.section,
     required this.subject,
+    required this.fileName,
     required this.chapters,
     required this.createdAt,
     required this.updatedAt,
@@ -21,7 +23,8 @@ class Syllabus {
       'className': className,
       'section': section,
       'subject': subject,
-      'chapters': chapters.map((chapter) => chapter.toMap()).toList(),
+      'fileName': fileName,
+      'chapters': chapters,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -30,14 +33,13 @@ class Syllabus {
   // Add a factory constructor to create from Map
   factory Syllabus.fromMap(Map<String, dynamic> map) {
     return Syllabus(
-      className: map['className'],
-      section: map['section'],
-      subject: map['subject'],
-      chapters: (map['chapters'] as List)
-          .map((chapter) => Chapter.fromMap(chapter))
-          .toList(),
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      className: map['className'] ?? '',
+      section: map['section'] ?? '',
+      subject: map['subject'] ?? '',
+      fileName: map['fileName'] ?? '',
+      chapters: List<String>.from(map['chapters'] ?? []),
+      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(map['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 }

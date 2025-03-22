@@ -16,8 +16,8 @@ class AdminDashboard extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,6 +64,7 @@ class AdminDashboard extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
+                childAspectRatio: 0.85,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [

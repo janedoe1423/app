@@ -40,7 +40,7 @@ class TeacherDashboard extends StatelessWidget {
                       SizedBox(
                         width: constraints.maxWidth > 600 
                             ? (constraints.maxWidth - 48) / 2 
-                            : constraints.maxWidth,
+                            : constraints.maxWidth - 32,
                         child: _buildStatCard(
                           'Active Assessments',
                           '5',
@@ -51,7 +51,7 @@ class TeacherDashboard extends StatelessWidget {
                       SizedBox(
                         width: constraints.maxWidth > 600 
                             ? (constraints.maxWidth - 48) / 2 
-                            : constraints.maxWidth,
+                            : constraints.maxWidth - 32,
                         child: _buildStatCard(
                           'Total Students',
                           '120',
@@ -70,51 +70,55 @@ class TeacherDashboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: constraints.maxWidth > 600 ? 3 : 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: constraints.maxWidth > 600 ? 1.2 : 0.95,
-                    children: [
-                      _buildFeatureCard(
-                        context,
-                        'Assessments',
-                        Icons.assignment,
-                        'Create and manage all assessments',
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AssessmentManagement(),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: constraints.maxWidth > 600 ? 3 : 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: _calculateChildAspectRatio(constraints.maxWidth),
+                        children: [
+                          _buildFeatureCard(
+                            context,
+                            'Assessments',
+                            Icons.assignment,
+                            'Create and manage all assessments',
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AssessmentManagement(),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      _buildFeatureCard(
-                        context,
-                        'Performance Analysis',
-                        Icons.analytics,
-                        'View student performance and analytics',
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PerformanceAnalysis(),
+                          _buildFeatureCard(
+                            context,
+                            'Performance Analysis',
+                            Icons.analytics,
+                            'View student performance and analytics',
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PerformanceAnalysis(),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      _buildFeatureCard(
-                        context,
-                        'Class Management',
-                        Icons.class_,
-                        'Manage classes and students',
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ClassManagement(),
+                          _buildFeatureCard(
+                            context,
+                            'Class Management',
+                            Icons.class_,
+                            'Manage classes and students',
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ClassManagement(),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -123,6 +127,13 @@ class TeacherDashboard extends StatelessWidget {
         },
       ),
     );
+  }
+
+  double _calculateChildAspectRatio(double width) {
+    if (width > 900) return 1.4;
+    if (width > 600) return 1.2;
+    if (width > 400) return 1.0;
+    return 0.85;
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
@@ -168,28 +179,37 @@ class TeacherDashboard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 48, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              Icon(
+                icon, 
+                size: 40,
+                color: Theme.of(context).primaryColor
               ),
               const SizedBox(height: 8),
               Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
